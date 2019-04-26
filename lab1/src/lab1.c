@@ -64,6 +64,15 @@ FILE **openFiles(struct flags *options){
   return files;
 }
 
+char checkOptions(struct flags *options){
+  char state = TRUE;
+  state = state && options->inputFile;
+  state = state && options->outputFile;
+  state = state && options->discQuantity > 0;
+  state = state && options->discRadium > 0;
+  return state;
+}
+
 void readFile(struct flags *options, FILE *input){
   float u, v, r, i, n;
   int index = 0;
@@ -83,6 +92,9 @@ int main(int argc, char **argv){
   struct flags *options = processArgv(argc, argv);
   FILE **files = openFiles(options);
   if(options == NULL){
+    ERREXIT("Error procesando los parametros", 1);
+  }
+  else if(!checkOptions(options)){
     ERREXIT("Error procesando los parametros", 1);
   }
   else if(files == NULL){
