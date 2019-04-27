@@ -4,12 +4,17 @@
 #include <stdlib.h>
 
 #define MAXLENSTRINGINPUT 100
+#define MAXLENBUFFER 1000
 #define TRUE 1
 #define FALSE 0
 #define ERREXIT(x, y) fprintf(stderr, "%s. Terminado con codigo %d\n", x, y); return y
 #define EXIT(x, y) fprintf(stderr, "%s. Terminado con codigo %d\n", x, y); return y
 #define INPUT 0
 #define OUTPUT 1
+#define FIN 0
+#define FOUT 1
+#define SIN 1
+#define SOUT 0
 
 struct flags{
   char inputFile[MAXLENSTRINGINPUT];
@@ -81,6 +86,7 @@ void readFile(struct flags *options, FILE *input){
     fprintf(stderr, "Linea %d\t:u=%f,\tv=%f,\ti=%f,\tr=%f,\tn=%f\n", index, u, v, r, i, n);
   }
 }
+
 /*
  * -i nombre de archivo de entrada
  * -o nombre de archivo de salida
@@ -101,6 +107,39 @@ int main(int argc, char **argv){
     ERREXIT("Error procesando archivos", 2);
   }
   printOptions(options);
-  readFile(options, files[INPUT]);
+  //readFile(options, files[INPUT]);
+
+  int pid;
+  int pipes[2][2];
+  char buffer[MAXLENBUFFER];
+  pipe(pipes[INPUT]);
+  pipe(pipes[OUTPUT]);
+  pid = fork();
+  if(pid < 0){
+    ERREXIT("Error creando procesos", 3);
+  }
+  else if(pid == 0){
+    close(pipes[FIN][OUTPUT]);
+    close(pipes[FOUT][INPUT]);
+    write(pipes[FOUT][OUTPUT], "wenahijo\n", 10);
+    read(pipes[FIN][INPUT], buffer, MAXLENBUFFER);
+    fprintf(stderr, "Mi hijo me dijo: %s\n", buffer);
+    close(pipes[FIN][INPUT]);
+    close(pipes[FOUT][OUTPUT]);
+    EXIT("Termine desde el padre", 0);
+  }
+  else{
+    close(pipes[SIN][OUTPUT]);
+    close(pipes[SOUT][INPUT]);
+    dup2(pipes[SIN][INPUT], STDIN_FILENO);
+    dup2(pipes[SOUT][OUTPUT], STDOUT_FILENO);
+    fprintf(stdout, "wenapadre");
+    fscanf(stdin, "%s", buffer);
+    fprintf(stderr, "Mi padre me dijo: %s\n", buffer);
+    close(pipes[SIN][INPUT]);
+    close(pipes[SOUT][OUTPUT]);
+    EXIT("Termine desde el hijo", 0);
+  }
+
   EXIT("Ejecucion completada", 0);
 }
