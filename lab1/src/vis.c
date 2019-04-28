@@ -20,6 +20,6 @@ int main(int argc, char ** argv){
 	mediaReal = mediaReal/k;
 	mediaImg = mediaImg/k;
 	potencia = sqrt(potencia);
-	printf("mediaReal = %f, mediaImg = %f, potencia = %f,noise = %f,total= %f\n",mediaReal,mediaImg,potencia,noise,k);
+	fprintf(stdout, "%f,%f,%f,%f,%f\n",mediaReal,mediaImg,potencia,noise,k);
 	return 0;
 }

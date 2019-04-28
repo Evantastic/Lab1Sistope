@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
@@ -20,6 +21,7 @@
 #define ENDOUTPUTS(n, x) for(int i = 0; i < n; i++) close(x[i].pipes[FOUT][OUTPUT])
 #define ENDINPUTS(n, x) for(int i = 0; i < n; i++) close(x[i].pipes[FIN][INPUT])
 #define WAITPIDS(n, x, y) for(int i = 0; i < n; i++) waitpid(x[i].pid, y, 0)
+#define DISC(x, y, z) sqrt(pow(x, 2) + pow(y, 2)) / z
 
 struct flags{
   char inputFile[MAXLENSTRINGINPUT];
@@ -32,7 +34,11 @@ struct flags{
 struct process{
   int pipes[2][2];
   int pid;
-  //Datos de estadistica
+  double mediaReal;
+  double mediaImg;
+  double potencia;
+  double noise;
+  double cantidad;
 };
 
 struct flags *processArgv(int argc, char **argv){
@@ -81,18 +87,10 @@ struct process *createProcess(struct flags *options){
       dup2(viss[i].pipes[SIN][INPUT], STDIN_FILENO);
       dup2(viss[i].pipes[SOUT][OUTPUT], STDOUT_FILENO);
       execl("./bin/vis","./bin/vis",(char *) NULL);
-      printf("ERROR\n");
+      return NULL;
     }
   }
   return viss;
-}
-
-void printOptions(struct flags *options){
-  fprintf(stdout, "Input: %s\n", options->inputFile);
-  fprintf(stdout, "Output: %s\n", options->outputFile);
-  fprintf(stdout, "Cantidad de discos: %d\n", options->discQuantity);
-  fprintf(stdout, "Ancho de discor: %d\n", options->discRadium);
-  fprintf(stdout, "Log: %s\n", options->log ? "True" : "False");
 }
 
 FILE **openFiles(struct flags *options){
@@ -116,11 +114,14 @@ char checkOptions(struct flags *options){
 
 void readFile(struct flags *options, FILE *input, struct process *viss){
   float u, v, r, i, n;
-  int index = 0;
-  while(fscanf(input, "%f,%f,%f,%f,%f\n", &u, &v, &r, &i, &n) != EOF){
+  int index = 0, position;
+  char buffer[MAXLENBUFFER];
+  while(fgets(buffer, MAXLENBUFFER, input) != NULL){
+    sscanf(buffer, "%f,%f,%f,%f,%f\n", &u, &v, &r, &i, &n);
     index++;
-
-    fprintf(stderr, "Linea %d\t:u=%f,\tv=%f,\ti=%f,\tr=%f,\tn=%f\n", index, u, v, r, i, n);
+    position = floor(DISC(u, v, options->discRadium));
+    position = position >= options->discQuantity ? options->discQuantity - 1: position;
+    write(viss[position].pipes[FOUT][OUTPUT], buffer, strlen(buffer));
   }
 }
 
@@ -148,12 +149,10 @@ int main(int argc, char **argv){
   else if(files == NULL){
     ERREXIT("Error procesando archivos", 2);
   }
-  printOptions(options);
   viss = createProcess(options);
   if(viss == NULL){
     ERREXIT("Error creando procesos", 3);
   }
-  //Verificar que viss no es nulo
   readFile(options, files[INPUT], viss);
   ENDOUTPUTS(options->discQuantity, viss);
   //Aca se reciben las estadisticas
