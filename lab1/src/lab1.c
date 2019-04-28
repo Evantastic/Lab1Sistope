@@ -80,7 +80,7 @@ struct process *createProcess(struct flags *options){
       close(viss[i].pipes[SOUT][INPUT]);
       dup2(viss[i].pipes[SIN][INPUT], STDIN_FILENO);
       dup2(viss[i].pipes[SOUT][OUTPUT], STDOUT_FILENO);
-      execl("./bin/vis","ls",NULL);
+      execl("./bin/vis","./bin/vis",(char *) NULL);
       printf("ERROR\n");
     }
   }
@@ -119,6 +119,7 @@ void readFile(struct flags *options, FILE *input, struct process *viss){
   int index = 0;
   while(fscanf(input, "%f,%f,%f,%f,%f\n", &u, &v, &r, &i, &n) != EOF){
     index++;
+
     fprintf(stderr, "Linea %d\t:u=%f,\tv=%f,\ti=%f,\tr=%f,\tn=%f\n", index, u, v, r, i, n);
   }
 }
