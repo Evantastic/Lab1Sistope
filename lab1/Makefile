@@ -12,10 +12,10 @@ lab1.o: $(CDIR)/lab1.c
 	$(CC) $(CFLAGS) -c $(CDIR)/lab1.c -o $(BDIR)/lab1.o
 
 vis: vis.o
-	$(CC) $(CFLAGS) -o $(BDIR)/vis $(BDIR)/vis.o
+	$(CC) $(CFLAGS) -o $(BDIR)/vis $(BDIR)/vis.o -lm
 
 vis.o: $(CDIR)/vis.c
-	$(CC) $(CFLAGS) -c $(CDIR)/vis.c -o $(BDIR)/vis.o
+	$(CC) $(CFLAGS) -c $(CDIR)/vis.c -o $(BDIR)/vis.o -lm
 
 clean:
 	rm $(BDIR)/*

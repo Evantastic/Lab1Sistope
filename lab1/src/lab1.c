@@ -80,7 +80,8 @@ struct process *createProcess(struct flags *options){
       close(viss[i].pipes[SOUT][INPUT]);
       dup2(viss[i].pipes[SIN][INPUT], STDIN_FILENO);
       dup2(viss[i].pipes[SOUT][OUTPUT], STDOUT_FILENO);
-      //execv
+      execl("./bin/vis","ls",NULL);
+      printf("ERROR\n");
     }
   }
   return viss;
