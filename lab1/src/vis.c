@@ -3,12 +3,11 @@
 #include <unistd.h>
 #include <math.h>
 
+#define MAXLENBUFFER 1000
+
 int main(int argc, char ** argv){
-	double mediaReal = 0.0;
-	double mediaImg = 0.0;
-	double potencia = 0.0;
-	double noise = 0.0;
-	double k = 0.0;
+	double mediaReal = 0.0, mediaImg = 0.0, potencia = 0.0, noise = 0.0, k = 0.0;
+  char *buffer = (char *) calloc(MAXLENBUFFER, sizeof(char));
 	float u, v, r, i, n;
 	while(fscanf(stdin, "%f,%f,%f,%f,%f\n", &u, &v, &r, &i, &n) != EOF){
 		mediaReal = mediaReal + r;
@@ -20,6 +19,8 @@ int main(int argc, char ** argv){
 	mediaReal = mediaReal/k;
 	mediaImg = mediaImg/k;
 	potencia = sqrt(potencia);
-	fprintf(stdout, "%f,%f,%f,%f,%f\n",mediaReal,mediaImg,potencia,noise,k);
+  sprintf(buffer, "%lf,%lf,%lf,%lf,%d", mediaReal, mediaImg, potencia, noise, (int) k);
+	printf("%s",buffer);
+  free(buffer);
 	return 0;
 }

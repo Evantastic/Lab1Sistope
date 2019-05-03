@@ -34,11 +34,8 @@ struct flags{
 struct process{
   int pipes[2][2];
   int pid;
-  double mediaReal;
-  double mediaImg;
-  double potencia;
-  double noise;
-  double cantidad;
+  double mediaReal, mediaImg, potencia, noise;
+  int cantidad;
 };
 
 struct flags *processArgv(int argc, char **argv){
@@ -77,7 +74,7 @@ struct process *createProcess(struct flags *options){
     if(viss[i].pid < 0){
       return NULL;
     }
-    else if(viss[i].pid == 0){
+    else if(viss[i].pid > 0){
       close(viss[i].pipes[FIN][OUTPUT]);
       close(viss[i].pipes[FOUT][INPUT]);
     }
@@ -114,15 +111,49 @@ char checkOptions(struct flags *options){
 
 void readFile(struct flags *options, FILE *input, struct process *viss){
   float u, v, r, i, n;
-  int index = 0, position;
+  int position;
   char buffer[MAXLENBUFFER];
   while(fgets(buffer, MAXLENBUFFER, input) != NULL){
     sscanf(buffer, "%f,%f,%f,%f,%f\n", &u, &v, &r, &i, &n);
-    index++;
     position = floor(DISC(u, v, options->discRadium));
     position = position >= options->discQuantity ? options->discQuantity - 1: position;
     write(viss[position].pipes[FOUT][OUTPUT], buffer, strlen(buffer));
   }
+}
+
+struct process *getStatistics(struct flags *options, struct process *viss){
+  char buffer[MAXLENBUFFER];
+  for(int i = 0; i < options->discQuantity; i++){
+    memset(buffer, 0, MAXLENBUFFER);
+    read(viss[i].pipes[FIN][INPUT], buffer, MAXLENBUFFER);
+    sscanf(buffer,"%lf,%lf,%lf,%lf,%d", &viss[i].mediaReal, &viss[i].mediaImg, &viss[i].potencia, &viss[i].noise, &viss[i].cantidad);
+  }
+  return viss;
+}
+
+void printStatistics(struct flags *options, FILE *output, struct process *viss){
+  for(int i = 0; i < options->discQuantity; i++){
+    fprintf(output,"Disco %d\n",i+1);
+    fprintf(output, "Media Real: %lf\nMedia Imaginaria: %lf\nPotencia: %lf\nRuido Total: %lf\n", viss[i].mediaReal, viss[i].mediaImg, viss[i].potencia, viss[i].noise);
+  }
+}
+
+void printQuantities(struct flags *options, struct process *viss){
+  if(!options->log)
+    return;
+  for(int i = 0; i < options->discQuantity; i++){
+    printf("Proceso con PID %d procesa %d visibilidades\n", viss[i].pid, viss[i].cantidad);
+  }
+}
+
+void freeMemory(struct flags *options, struct process *viss){
+  free(options);
+  free(viss);
+}
+
+void closeFiles(FILE **files){
+  fclose(files[INPUT]);
+  fclose(files[OUTPUT]);
 }
 
 /*
@@ -155,11 +186,12 @@ int main(int argc, char **argv){
   }
   readFile(options, files[INPUT], viss);
   ENDOUTPUTS(options->discQuantity, viss);
-  //Aca se reciben las estadisticas
+  getStatistics(options, viss);
   ENDINPUTS(options->discQuantity, viss);
   WAITPIDS(options->discQuantity, viss, &status);
-  //Aca se imprime en el archivo
-  //Aca se imprime si log == TRUE
-  //Aca se libera memoria
+  printStatistics(options, files[OUTPUT], viss);
+  printQuantities(options, viss);
+  freeMemory(options, viss);
+  closeFiles(files);
   EXIT("Ejecucion completada", 0);
 }
