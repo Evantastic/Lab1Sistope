@@ -6,23 +6,32 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+//Constantes
 #define MAXLENSTRINGINPUT 100
 #define MAXLENBUFFER 1000
 #define TRUE 1
 #define FALSE 0
-#define ERREXIT(x, y) fprintf(stderr, "%s. Terminado con codigo %d\n", x, y); return y
-#define EXIT(x, y) fprintf(stderr, "%s. Terminado con codigo %d\n", x, y); return y
 #define INPUT 0
 #define OUTPUT 1
 #define FIN 0
 #define FOUT 1
 #define SIN 1
 #define SOUT 0
+//Macros
+//Macro encargado de imprimir un mensaje de salida con un codigo y retornar el codigo
+#define EXIT(x, y) fprintf(stderr, "%s. Terminado con codigo %d\n", x, y); return y
+//Macro encargado de cerrar todos los pipes de escritura usados por este proceso
 #define ENDOUTPUTS(n, x) for(int i = 0; i < n; i++) close(x[i].pipes[FOUT][OUTPUT])
+//Macro encargado de cerrar todos los pipes de lectura usados por este proceso
 #define ENDINPUTS(n, x) for(int i = 0; i < n; i++) close(x[i].pipes[FIN][INPUT])
+//Macro encargado de esperar que todos los procesos creados terminen
 #define WAITPIDS(n, x, y) for(int i = 0; i < n; i++) waitpid(x[i].pid, y, 0)
+//Macro encargado de calcular a que disco pertenece una visibilidad
 #define DISC(x, y, z) sqrt(pow(x, 2) + pow(y, 2)) / z
 
+/*
+ * Estrutura para representar los parametros ingresados por linea de comandos
+ */
 struct flags{
   char inputFile[MAXLENSTRINGINPUT];
   char outputFile[MAXLENSTRINGINPUT];
@@ -31,6 +40,9 @@ struct flags{
   char log;
 };
 
+/*
+ * Estrutura que representa un proceso creado
+ */
 struct process{
   int pipes[2][2];
   int pid;
@@ -38,6 +50,11 @@ struct process{
   int cantidad;
 };
 
+/*
+ * Funcion que se encarga de obtener los parametros de la linea de comandos
+ * Recibe los parametros recibidos en main, un entero que indica la cantidad de argumentos y un char ** que corraeponde al arreglo de strings entregado al programa
+ * Retorna un puntero a la estructura que almacena los procesos
+ */
 struct flags *processArgv(int argc, char **argv){
   int currentFlag = 0;
   struct flags *options = (struct flags *) calloc(1, sizeof(struct flags));
@@ -65,6 +82,11 @@ struct flags *processArgv(int argc, char **argv){
   return options;
 }
 
+/*
+ * Funcion que se encarga de crear los procesos y cambiar el codygo en memoria por el proceso vis
+ * Recibe los parametros entregados por  linea de comandos
+ * Entrega un arreglo de procesos
+ */
 struct process *createProcess(struct flags *options){
   struct process *viss = (struct process *) calloc(options->discQuantity, sizeof(struct process));
   for(int i = 0; i < options->discQuantity; i++){
@@ -83,13 +105,18 @@ struct process *createProcess(struct flags *options){
       close(viss[i].pipes[SOUT][INPUT]);
       dup2(viss[i].pipes[SIN][INPUT], STDIN_FILENO);
       dup2(viss[i].pipes[SOUT][OUTPUT], STDOUT_FILENO);
-      execl("./bin/vis","./bin/vis",(char *) NULL);
+      execl("./vis","./vis",(char *) NULL);
       return NULL;
     }
   }
   return viss;
 }
 
+/*
+ * Estructura que se encarga de abrir los archivos
+ * Recibe los parametros entregados por  linea de comandos
+ * Retorna un arreglo de FILE*
+ */
 FILE **openFiles(struct flags *options){
   FILE **files;
   files = (FILE **) calloc(2, sizeof(FILE *));
@@ -100,6 +127,11 @@ FILE **openFiles(struct flags *options){
   return files;
 }
 
+/*
+ * Funcion que se encarga de verificar de si los parametros ingresados por linea de comandos son validos
+ * Recibe los parametros entregados por  linea de comandos
+ * Retorna un char correspontiente a FALSE o TRUE
+ */
 char checkOptions(struct flags *options){
   char state = TRUE;
   state = state && options->inputFile;
@@ -109,6 +141,11 @@ char checkOptions(struct flags *options){
   return state;
 }
 
+/*
+ * Funcion que se encarga de leer el achivo de entrada y analizar cada linea para ver a que proceso es enviado
+ * Recibe los parametros entregados por  linea de comandos, el archivo de entrada y el arreglo de procesos creados
+ * No posee retorno
+ */
 void readFile(struct flags *options, FILE *input, struct process *viss){
   float u, v, r, i, n;
   int position;
@@ -121,6 +158,11 @@ void readFile(struct flags *options, FILE *input, struct process *viss){
   }
 }
 
+/*
+ * Funcion que se encarga de obtener las estadisticas desde los procesos creados
+ * Recibe los parametros entregados por  linea de comandos y el arreglo de procesos crados
+ * Retorna el arreglo de procesos editados
+ */
 struct process *getStatistics(struct flags *options, struct process *viss){
   char buffer[MAXLENBUFFER];
   for(int i = 0; i < options->discQuantity; i++){
@@ -131,6 +173,11 @@ struct process *getStatistics(struct flags *options, struct process *viss){
   return viss;
 }
 
+/*
+ * Funcion que se encarga de imprimir las estadisticas en el archivo de salida
+ * Recibe los parametros entregados por  linea de comandos, el archivo de salida y el arreglo de procesos crados
+ * No posee retorno
+ */
 void printStatistics(struct flags *options, FILE *output, struct process *viss){
   for(int i = 0; i < options->discQuantity; i++){
     fprintf(output,"Disco %d\n",i+1);
@@ -138,6 +185,11 @@ void printStatistics(struct flags *options, FILE *output, struct process *viss){
   }
 }
 
+/*
+ * Funcion que se encarga de imprimir las visibilidades procesadas
+ * Recibe los parametros entregados por  linea de comandos y el arreglo de procesos crados
+ * No posee retorno
+ */
 void printQuantities(struct flags *options, struct process *viss){
   if(!options->log)
     return;
@@ -146,23 +198,26 @@ void printQuantities(struct flags *options, struct process *viss){
   }
 }
 
+/*
+ * Funcion que se encarga de liberar la memoria
+ * Recibe los parametros entregados por  linea de comandos y el arreglo de procesos crados
+ * No posee retorno
+ */
 void freeMemory(struct flags *options, struct process *viss){
   free(options);
   free(viss);
 }
 
+/*
+ * Funcion que se encarga de cerrar los archivos
+ * Recibe el arreglo de archivos abiertos
+ * No posee retorno
+ */
 void closeFiles(FILE **files){
   fclose(files[INPUT]);
   fclose(files[OUTPUT]);
 }
 
-/*
- * -i nombre de archivo de entrada
- * -o nombre de archivo de salida
- * -d ancho discos
- * -n ndiscos
- * -b
- */
 int main(int argc, char **argv){
   struct flags *options;
   FILE **files;
@@ -172,17 +227,17 @@ int main(int argc, char **argv){
   options = processArgv(argc, argv);
   files = openFiles(options);
   if(options == NULL){
-    ERREXIT("Error procesando los parametros", 1);
+    EXIT("Error procesando los parametros", 1);
   }
   else if(!checkOptions(options)){
-    ERREXIT("Error procesando los parametros", 1);
+    EXIT("Error procesando los parametros", 1);
   }
   else if(files == NULL){
-    ERREXIT("Error procesando archivos", 2);
+    EXIT("Error procesando archivos", 2);
   }
   viss = createProcess(options);
   if(viss == NULL){
-    ERREXIT("Error creando procesos", 3);
+    EXIT("Error creando procesos", 3);
   }
   readFile(options, files[INPUT], viss);
   ENDOUTPUTS(options->discQuantity, viss);
