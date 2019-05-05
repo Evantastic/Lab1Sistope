@@ -1,6 +1,7 @@
 #! /bin/zsh
 OUTPUT="../resources/output"
 INPUT="../resources/input.csv"
+FAILIOUTPUT="../resources/failOutput"
 SEPARADOR="####################\n"
 cd bin
 printf "\n>Prueba con -b\n"
@@ -17,7 +18,7 @@ printf "Contenido del output\n"
 cat $OUTPUT
 printf $SEPARADOR
 printf "\n>Prueba con parametros menos\n"
-./lab1 -i $INPUT -o $OUTPUT -d 70 
+./lab1 -i $INPUT -o $FAILOUTPUT -d 70 
 printf "\n>Prueba con parametros sin valor\n"
-./lab1 -i $INPUT -o $OUTPUT -d 70 -n
+./lab1 -i $INPUT -o $FAILOUTPUT -d 70 -n
 cd ..
