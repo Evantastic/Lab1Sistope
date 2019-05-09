@@ -46,8 +46,8 @@ struct flags{
 struct process{
   int pipes[2][2];
   int pid;
-  double mediaReal, mediaImg, potencia, noise;
-  int cantidad;
+  double realAverage, imgAverage, power, noise;
+  int quantity;
 };
 
 /*
@@ -168,7 +168,7 @@ struct process *getStatistics(struct flags *options, struct process *viss){
   for(int i = 0; i < options->discQuantity; i++){
     memset(buffer, 0, MAXLENBUFFER);
     read(viss[i].pipes[FIN][INPUT], buffer, MAXLENBUFFER);
-    sscanf(buffer,"%lf,%lf,%lf,%lf,%d", &viss[i].mediaReal, &viss[i].mediaImg, &viss[i].potencia, &viss[i].noise, &viss[i].cantidad);
+    sscanf(buffer,"%lf,%lf,%lf,%lf,%d", &viss[i].realAverage, &viss[i].imgAverage, &viss[i].power, &viss[i].noise, &viss[i].quantity);
   }
   return viss;
 }
@@ -181,7 +181,7 @@ struct process *getStatistics(struct flags *options, struct process *viss){
 void printStatistics(struct flags *options, FILE *output, struct process *viss){
   for(int i = 0; i < options->discQuantity; i++){
     fprintf(output,"Disco %d\n",i+1);
-    fprintf(output, "Media Real: %lf\nMedia Imaginaria: %lf\nPotencia: %lf\nRuido Total: %lf\n", viss[i].mediaReal, viss[i].mediaImg, viss[i].potencia, viss[i].noise);
+    fprintf(output, "Media Real: %lf\nMedia Imaginaria: %lf\nPotencia: %lf\nRuido Total: %lf\n", viss[i].realAverage, viss[i].imgAverage, viss[i].power, viss[i].noise);
   }
 }
 
@@ -194,7 +194,7 @@ void printQuantities(struct flags *options, struct process *viss){
   if(!options->log)
     return;
   for(int i = 0; i < options->discQuantity; i++){
-    printf("Proceso con PID %d procesa %d visibilidades\n", viss[i].pid, viss[i].cantidad);
+    printf("Proceso con PID %d procesa %d visibilidades\n", viss[i].pid, viss[i].quantity);
   }
 }
 

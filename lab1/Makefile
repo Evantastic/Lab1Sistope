@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -g -Wall -lm
-BDIR = ./bin
+BDIR = .
 CDIR = ./src
 
 default: lab1 vis
@@ -18,4 +18,4 @@ vis.o: $(CDIR)/vis.c
 	$(CC) -c $(CDIR)/vis.c -o $(BDIR)/vis.o $(CFLAGS)
 
 clean:
-	rm $(BDIR)/*
+	rm $(BDIR)/*.o $(BDIR)/lab1 $(BDIR)/vis
