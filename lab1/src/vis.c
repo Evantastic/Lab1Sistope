@@ -13,13 +13,12 @@ int main(int argc, char ** argv){
     realAverage += r;
     imgAverage += i;
     //Preguntar sobre la formula de potencia
-    power += pow(r,2) + pow(i,2);
+    power += sqrt(pow(r,2) + pow(i,2));
     noise += n;
     k++;
   }
   realAverage = realAverage/k;
   imgAverage = imgAverage/k;
-  power = sqrt(power);
   sprintf(buffer, "%lf,%lf,%lf,%lf,%d", realAverage, imgAverage, power, noise, (int) k);
   printf("%s",buffer);
   free(buffer);
