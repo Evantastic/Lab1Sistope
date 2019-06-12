@@ -10,7 +10,8 @@
 #define TRUE 1
 #define FALSE 0
 #define MAXLENBUFFER 200
-#define DISC(x, y, z) sqrt(pow(x, 2) + pow(y, 2)) / z
+#define DISC(x, y, z) floor(sqrt(pow(x, 2) + pow(y, 2)) / z)
+
 
 struct flags {
 	FILE *inputFile;
@@ -39,8 +40,31 @@ struct monitor {
 	pthread_mutex_t *lock;
 };
 
-pthread_mutex_t lock;
+struct globalData {
+	float *realMean;
+	float *imgMean;
+	float *noise;
+	float *power;
+};
 
-char reading = TRUE;
+
+
+struct flags *proccessArgv(int argc, char **argv);
+
+char checkOptions(const struct flags options);
+
+struct monitor *createMonitors(const struct flags options);
+
+void freeData(struct monitor *monitors, struct flags *options, pthread_t *threads);
+
+void printData(const struct flags options);
+
+void waitThreads(const pthread_t *threads, const struct flags options);
+
+pthread_t *createStartThreads(const struct monitor *monitors, const struct flags options);
+
+void readFile(struct flags options, struct monitor *monitors);
+
+void *readData(void *data);
 
 #endif

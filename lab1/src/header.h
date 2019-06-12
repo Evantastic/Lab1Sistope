@@ -49,7 +49,7 @@ struct flags{
 struct process{
   int pipes[2][2];
   int pid;
-  double realAverage, imgAverage, power, noise;
+  float realAverage, imgAverage, power, noise;
   int quantity;
 };
 
