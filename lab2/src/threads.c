@@ -5,6 +5,10 @@ char reading = TRUE;
 char logNeeded = FALSE;
 struct globalData sharedData;
 
+/*
+ * Proceso que inicializa los datos a usar por las hebras
+ * Entrada: las opciones ingresadas
+ */
 void static initializeData(const struct flags options)
 {
   lock = (pthread_mutex_t *) calloc(1, sizeof(pthread_mutex_t));
@@ -17,6 +21,11 @@ void static initializeData(const struct flags options)
     logNeeded = TRUE;
 }
 
+
+/*
+ * Proceso que se encarga de ejecutar la logica solicitada para las hebras
+ * Entrada: recibe el monitor asociado a la hebra
+ */
 void *readData(void *data)
 {
   struct monitor *monitor = (struct monitor *) data;
@@ -60,6 +69,10 @@ void *readData(void *data)
   return NULL;
 }
 
+/*
+ * Proceso que lee el archivo y envia los datos a las hebras
+ * Entrada: las opciones ingresadas y los monitores
+ */
 void readFile(struct flags options, struct monitor *monitors)
 {
   float u, v, r, i, n;
@@ -76,7 +89,6 @@ void readFile(struct flags options, struct monitor *monitors)
       pthread_cond_signal(monitors[position].fullBuffer);
       pthread_cond_wait(monitors[position].emptyBuffer, monitors[position].lock);
     }
-    fprintf(stderr, "insertando en %d\n", monitors[position].actualSize);
     monitors[position].buffer[monitors[position].actualSize].u = u;
     monitors[position].buffer[monitors[position].actualSize].v = v;
     monitors[position].buffer[monitors[position].actualSize].r = r;
@@ -91,6 +103,10 @@ void readFile(struct flags options, struct monitor *monitors)
   }
 }
 
+/*
+ * Proceso que imprime los datos obtenidos por las hebras
+ * Entrada: las opciones ingresadas
+ */
 void printData(const struct flags options)
 {
   for(int i = 0; i < options.discQuantity; i++) {

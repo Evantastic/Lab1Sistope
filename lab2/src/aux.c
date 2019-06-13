@@ -1,5 +1,10 @@
 #include "header.h"
 
+/*
+ * Función que procesa las entradas
+ * Entrada: cantidad de elementos por linea de comandos y los parametros ingresados
+ * Salida: estructura que contiene las opciones
+ */
 struct flags *proccessArgv(int argc, char **argv)
 {
 	int currentFlag;
@@ -19,7 +24,7 @@ struct flags *proccessArgv(int argc, char **argv)
 				options->discQuantity = atoi(optarg);
 				break;
 			case 'b':
-                options->log = TRUE;
+        options->log = TRUE;
 				break;
 			case 's':
 				options->bufferSize = atoi(optarg);
@@ -33,6 +38,11 @@ struct flags *proccessArgv(int argc, char **argv)
 	return options;
 }
 
+/*
+ * Función que verifica las opciones ingresadas
+ * Entrada: opciones ingresadas
+ * Salida: TRUE/FALSE
+ */
 char checkOptions(const struct flags options)
 {
 	char state = TRUE;
@@ -44,6 +54,11 @@ char checkOptions(const struct flags options)
 	return state;
 }
 
+/*
+ * Función que crea la cantidad designada de monitores
+ * Entrada: opciones ingresadas
+ * Salida: structura con los monitores correspondientes
+ */
 struct monitor *createMonitors(const struct flags options)
 {
   struct monitor *monitors = (struct monitor *) calloc(options.discQuantity, sizeof(struct monitor));
@@ -62,6 +77,10 @@ struct monitor *createMonitors(const struct flags options)
   return monitors;
 }
 
+/*
+ * Proceso que libera la memoria del programa
+ * Entrada: los monitores, las opciones y las hebras
+ */
 void freeData(struct monitor *monitors, struct flags *options, pthread_t *threads)
 {
   for (int i = 0; i < options->discQuantity; i++) {
@@ -75,6 +94,11 @@ void freeData(struct monitor *monitors, struct flags *options, pthread_t *thread
   free(options);
 }
 
+/*
+ * Función que crea e inicializa las hebras
+ * Entrada: monitores y las opciones
+ * Salida: las estructuras de las hebras inicializadas
+ */
 pthread_t *createStartThreads(const struct monitor *monitors, const struct flags options)
 {
   pthread_t *threads = (pthread_t *) calloc(options.discQuantity, sizeof(pthread_t));
@@ -84,6 +108,10 @@ pthread_t *createStartThreads(const struct monitor *monitors, const struct flags
   return threads;
 }
 
+/*
+ * Proceso que espera a que las hebras terminen su ejecucion
+ * Entrada: las hebras y las opciones
+ */
 void waitThreads(const pthread_t *threads, const struct flags options)
 {
   for (int i = 0; i < options.discQuantity; i++) {

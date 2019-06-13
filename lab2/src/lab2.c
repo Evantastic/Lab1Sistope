@@ -2,7 +2,7 @@
 
 int main(int argc, char **argv)
 {
-	struct flags *options;
+  struct flags *options;
   struct monitor *monitors;
   pthread_t *threads;
 	options = proccessArgv(argc, argv);
