@@ -27,6 +27,7 @@ struct file_instruction {
         unsigned int passenger_quantity;
 };
 
-char read_files(struct command_line_args *);
+void read_files(struct command_line_args *);
+struct command_line_args *proccess_args(int, char **);
 
 #endif
